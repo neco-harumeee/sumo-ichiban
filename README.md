@@ -57,11 +57,11 @@
 
 | ドキュメント | 内容 |
 |------------|------|
-| [要件定義書](aidlc-docs/inception/requirements/requirements.md) | 機能要件・非機能要件・ユーザーシナリオ |
-| [ペルソナ定義](aidlc-docs/inception/user-stories/personas.md) | トレーニング愛好家「田中 剛」 |
-| [ユーザーストーリー](aidlc-docs/inception/user-stories/stories.md) | 11 ストーリー / 4 エピック・受け入れ基準 |
-| [アプリケーション設計](aidlc-docs/inception/application-design/application-design.md) | コンポーネント構成・サービス定義・データフロー |
-| [Unit of Work](aidlc-docs/inception/application-design/unit-of-work.md) | 7 ユニット分割・モノレポ構成・実装優先順位 |
+| [要件定義書](inception/requirements/requirements.md) | 機能要件・非機能要件・ユーザーシナリオ |
+| [ペルソナ定義](inception/user-stories/personas.md) | トレーニング愛好家「田中 剛」 |
+| [ユーザーストーリー](inception/user-stories/stories.md) | 11 ストーリー / 4 エピック・受け入れ基準 |
+| [アプリケーション設計](inception/application-design/application-design.md) | コンポーネント構成・サービス定義・データフロー |
+| [Unit of Work](inception/application-design/unit-of-work.md) | 7 ユニット分割・モノレポ構成・実装優先順位 |
 
 ---
 
