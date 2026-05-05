@@ -9,7 +9,7 @@
 ## Workspace State
 - **Existing Code**: No
 - **Reverse Engineering Needed**: No
-- **Workspace Root**: /home/aki/aws/aidlc-workflows-0.1.8/aidlc-rules
+- **Workspace Root**: (omitted)
 
 ## Code Location Rules
 - **Application Code**: Workspace root (NEVER in aidlc-docs/)
