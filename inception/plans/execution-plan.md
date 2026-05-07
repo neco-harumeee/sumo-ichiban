@@ -1,110 +1,56 @@
-# 実行計画 — TRAINING LOCK
+# 実行計画 — お相撲さんと一緒
 
-## 詳細分析サマリー
+## 計画サマリー
 
-### 変更影響評価
 | 項目 | 内容 |
 |------|------|
-| **ユーザー向け変更** | Yes — Web UI（トレーニング宣言・設定画面） |
-| **構造的変更** | Yes — 新規サービス（Greenfield）、複数 AWS サービス連携 |
-| **データモデル変更** | Yes — セッション状態・連絡先・発注履歴の管理 |
-| **API 変更** | Yes — API Gateway + Lambda エンドポイント新規作成 |
-| **NFR 影響** | Yes — Bedrock レイテンシ・Polly 音声生成・S3 コスト |
-
-### リスク評価
-| 項目 | 評価 |
-|------|------|
-| **リスクレベル** | Medium |
-| **ロールバック複雑度** | Moderate（AWS リソース削除で対応可） |
-| **テスト複雑度** | Moderate（モック実装で工数抑制） |
-| **主なリスク** | Bedrock API レイテンシ / PA-API 利用制限 / ハッカソン期間制約 |
+| **プロジェクト** | お相撲さんと一緒 |
+| **タイプ** | Greenfield |
+| **想定ユニット数** | 6 |
+| **リスク** | Medium |
+| **期間** | ハッカソン期間内 |
 
 ---
 
-## ワークフロー可視化
+## ステージ実行計画
 
-```
-[ユーザーリクエスト]
-        |
-        v
-+------------------------------------------+
-|  INCEPTION PHASE                         |
-+------------------------------------------+
-| [x] Workspace Detection    COMPLETED     |
-| [x] Requirements Analysis  COMPLETED     |
-| [x] User Stories           COMPLETED     |
-| [x] Workflow Planning      IN PROGRESS   |
-| [ ] Application Design     EXECUTE       |
-| [ ] Units Generation       EXECUTE       |
-+------------------------------------------+
-        |
-        v
-+------------------------------------------+
-|  CONSTRUCTION PHASE (per unit)           |
-+------------------------------------------+
-| [ ] Functional Design      EXECUTE       |
-| [ ] NFR Requirements       EXECUTE       |
-| [ ] NFR Design             EXECUTE       |
-| [ ] Infrastructure Design  EXECUTE       |
-| [ ] Code Generation        EXECUTE       |
-| [ ] Build and Test         EXECUTE       |
-+------------------------------------------+
-        |
-        v
-+------------------------------------------+
-|  OPERATIONS PHASE                        |
-+------------------------------------------+
-| [ ] Operations             PLACEHOLDER   |
-+------------------------------------------+
-```
+| ステージ | 実行判定 | 理由 |
+|---------|---------|------|
+| Workspace Detection | EXECUTE | 必須 |
+| Reverse Engineering | SKIP | Greenfield |
+| Requirements Analysis | EXECUTE | 必須 |
+| User Stories | EXECUTE | デモ映えに必要 |
+| Workflow Planning | EXECUTE | 必須 |
+| Application Design | EXECUTE | 必須 |
+| Units Generation | EXECUTE | 必須 |
+| Functional Design | EXECUTE | ユニット毎 |
+| NFR Requirements | EXECUTE | ユニット毎 |
+| NFR Design | EXECUTE | ユニット毎 |
+| Infrastructure Design | EXECUTE | ユニット毎 |
+| Code Generation | EXECUTE | ユニット毎 |
+| Build and Test | EXECUTE | 必須 |
+| Operations | PLACEHOLDER | ハッカソン後 |
 
 ---
 
-## 実行フェーズ詳細
+## 想定ユニット構成
 
-### 🔵 INCEPTION PHASE
-
-| ステージ | 判定 | 理由 |
-|---------|------|------|
-| Workspace Detection | ✅ COMPLETED | 実施済み |
-| Reverse Engineering | ⏭ SKIPPED | Greenfield のため不要 |
-| Requirements Analysis | ✅ COMPLETED | 実施済み |
-| User Stories | ✅ COMPLETED | 実施済み（11 ストーリー / 4 エピック） |
-| Workflow Planning | ✅ IN PROGRESS | 本ステージ |
-| **Application Design** | 🟠 **EXECUTE** | 新規コンポーネント（Web UI / Lambda / Bedrock Agent / Polly / S3 / DynamoDB）の設計が必要 |
-| **Units Generation** | 🟠 **EXECUTE** | 4 エピックを並行開発可能な単位に分解する価値あり |
-
-### 🟢 CONSTRUCTION PHASE（各ユニット）
-
-| ステージ | 判定 | 理由 |
-|---------|------|------|
-| **Functional Design** | 🟠 **EXECUTE** | Bedrock プロンプト設計・状態管理ロジック・メール生成ロジックの詳細設計が必要 |
-| **NFR Requirements** | 🟠 **EXECUTE** | Bedrock レイテンシ・Polly 音声生成コスト・S3 ストレージ・DynamoDB スループットの要件定義が必要 |
-| **NFR Design** | 🟠 **EXECUTE** | NFR パターン（非同期処理・エラーハンドリング・タイムアウト）の組み込みが必要 |
-| **Infrastructure Design** | 🟠 **EXECUTE** | Lambda / API Gateway / S3 / DynamoDB / Bedrock / Polly の具体的なマッピングが必要 |
-| **Code Generation** | ✅ **EXECUTE** | 常に実行（ALWAYS） |
-| **Build and Test** | ✅ **EXECUTE** | 常に実行（ALWAYS） |
-
-### 🟡 OPERATIONS PHASE
-
-| ステージ | 判定 | 理由 |
-|---------|------|------|
-| Operations | ⏸ PLACEHOLDER | 将来の拡張用 |
+| ID | ユニット | 優先度 | 依存 |
+|----|---------|--------|------|
+| U-01 | Frontend（Next.js） | 高 | U-02 |
+| U-02 | Orchestrator Lambda | 高 | U-03, U-04, U-05 |
+| U-03 | Encouragement Lambda（Bedrock + Polly） | 高 | なし |
+| U-04 | Analysis Lambda（Transcribe + Rekognition） | 高 | なし |
+| U-05 | Dependency Tracker Lambda（DynamoDB） | 中 | なし |
+| U-06 | Infrastructure（AWS CDK） | 高 | 全ユニット |
 
 ---
 
-## 想定ユニット構成（Units Generation で確定）
+## リスク
 
-| ユニット候補 | 対応エピック | 主要 AWS サービス |
-|------------|------------|----------------|
-| Unit 1: Web UI + API | US-01, US-02, US-06, US-11 | API Gateway, Lambda, DynamoDB |
-| Unit 2: 社会的シールド | US-03, US-04, US-05 | Bedrock, Lambda, SES（モック） |
-| Unit 3: モチベ反論 | US-07, US-08, US-09 | Bedrock, Polly, S3, SES |
-| Unit 4: 物流連携 | US-10 | Bedrock, Lambda, PA-API（モック） |
-
----
-
-## 成功基準
-- **主目標**: ハッカソンデモ動画で全機能フローが確認できる
-- **主要成果物**: Web アプリ + Lambda 関数群 + Bedrock 連携 + Polly 音声生成
-- **品質ゲート**: 各ユニットの動作確認 → 統合テスト → デモ動画撮影可能な状態
+| リスク | 影響 | 対策 |
+|--------|------|------|
+| Rekognition のリアルタイム表情分析の遅延 | Medium | デモではモック実装で代替 |
+| Transcribe のリアルタイム音声認識の精度 | Medium | 緊張ワードリストで補完 |
+| Bedrock の応答速度 | Low | キャッシュ・プリセットメッセージで補完 |
+| ハッカソン期間内の実装量 | High | コア機能（FR-01〜FR-03）を優先、FR-04〜FR-06 はモック |

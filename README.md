@@ -1,16 +1,13 @@
-# Peak Condition, Zero Life Skills
+# お相撲さんと一緒
 
-> *体は最高、生活能力はゼロ。*
+> *「ひとりでは、もう無理です」*
 
-トレーニング愛好家の最大の敵は、怪我でも天気でもない。  
-**日常生活**である。——メール、家事、付き合い。
+仕事のクレーム電話、気の重い会議、言いづらい相談。  
+本来なら自分で少しずつ慣れていくべきその場面に、  
+**AIのお相撲さんが、そっと同席してくれるサービス。**
 
-**PCZ（Peak Condition, Zero life skills）** は、それらをすべて AWS 上の AI エージェントに丸投げする。  
-受信トレイは勝手に返信される。家族には自動で連絡が届く。ギアは自動で注文される。  
-サボろうとすると、Bedrock が音声で反論してくる。
-
-体は人生最高の仕上がりになる。  
-人間としての機能は、静かに失われていく。
+利用者は安心する。  
+しかし次第に、お相撲さん無しでは電話できなくなる。
 
 それが、このサービスの目的だ。
 
@@ -18,20 +15,20 @@
 
 ## どう動くか
 
-1. **宣言する** — Web アプリで「〇時間消える」と入力し、終了予定時刻をセット
-2. **シールド展開** — Bedrock Agent が仕事メールに自動返信、家族に連絡を送信
-3. **ギア発注** — Amazon PA-API がトレーニングギアを自動注文し「シューズ、ぽちっとしておきました」と報告
-4. **反論される** — 終了時刻を過ぎてもサボっていると、Polly が圧強めの音声メッセージを送りつける
+1. **場面を選ぶ** — クレーム電話 / 上司との面談 / Zoom会議 / 苦手な相談 から選択
+2. **お相撲さんが同席** — 通話・会議中にリアルタイムで励ましメッセージを表示
+3. **緊張を検知** — Amazon Transcribe がリアルタイムで文字起こし、緊張ワード・沈黙・早口を検知
+4. **どすこいが届く** — 🍵「落ち着いております」🧂「まわしは取られておりません」🍲「ここは耐えどころですな」
 
 ---
 
-## こんな人に
+## このサービスが人をダメにするポイント
 
-| | |
-|--|--|
-| 🏃 ランナー | 2時間消えても世界に気づかれたくない人 |
-| 🏋️ 筋トレ民 | セット中に未読メールが気になって集中できない人 |
-| 🚴 すべてのアスリート | 鍛えることに全振りして、大人としての責任を AI に任せたい人 |
+| 失われるもの | 上昇するもの |
+|------------|------------|
+| 会話力 | お相撲さん依存度 |
+| メンタル耐性 | 継続率 |
+| 交渉力 | 満足度 |
 
 ---
 
@@ -43,12 +40,11 @@
 |---------|------|
 | フロントエンド | Next.js（React + SSR） |
 | バックエンド | AWS Lambda + API Gateway（REST + WebSocket） |
-| AI エンジン | Amazon Bedrock Agents（Claude 3 Sonnet / Haiku） |
-| 音声生成 | Amazon Polly |
+| AI エンジン | Amazon Bedrock（Claude 3 系） |
+| 音声認識・緊張検知 | Amazon Transcribe（リアルタイム文字起こし／緊張ワード・沈黙・早口の検知） |
+| 音声生成 | Amazon Polly（お相撲さん音声） |
 | データベース | Amazon DynamoDB |
 | ストレージ | Amazon S3 |
-| 物流連携 | Amazon PA-API（モック） |
-| メール送信 | Amazon SES（モック） |
 | IaC | AWS CDK（TypeScript） |
 
 ---
@@ -57,11 +53,11 @@
 
 | ドキュメント | 内容 |
 |------------|------|
-| [要件定義書](inception/requirements/requirements.md) | 機能要件・非機能要件・ユーザーシナリオ |
-| [ペルソナ定義](inception/user-stories/personas.md) | トレーニング愛好家「田中 剛」 |
-| [ユーザーストーリー](inception/user-stories/stories.md) | 11 ストーリー / 4 エピック・受け入れ基準 |
-| [アプリケーション設計](inception/application-design/application-design.md) | コンポーネント構成・サービス定義・データフロー |
-| [Unit of Work](inception/application-design/unit-of-work.md) | 7 ユニット分割・モノレポ構成・実装優先順位 |
+| [要件定義書](inception/requirements/requirements.md) | 機能要件・非機能要件 |
+| [ペルソナ定義](inception/user-stories/personas.md) | ユーザーペルソナ |
+| [ユーザーストーリー](inception/user-stories/stories.md) | ストーリー・受け入れ基準 |
+| [アプリケーション設計](inception/application-design/application-design.md) | コンポーネント構成・サービス定義 |
+| [Unit of Work](inception/application-design/unit-of-work.md) | ユニット分割・実装優先順位 |
 
 ---
 

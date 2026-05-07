@@ -1,10 +1,10 @@
 # AI-DLC State Tracking
 
 ## Project Information
-- **Project Name**: TRAINING LOCK
+- **Project Name**: お相撲さんと一緒
 - **Project Type**: Greenfield
-- **Start Date**: 2026-05-05T21:30:00Z
-- **Current Stage**: INCEPTION - Workflow Planning
+- **Start Date**: 2026-05-08T00:00:00Z
+- **Current Stage**: INCEPTION - Units Generation Complete
 
 ## Workspace State
 - **Existing Code**: No
@@ -38,18 +38,18 @@
 - [x] Units Generation — COMPLETED
 
 ### 🟢 CONSTRUCTION PHASE
-- [-] Functional Design — IN PROGRESS (orchestrator ✅)
-- [ ] NFR Requirements — EXECUTE (per unit)
-- [ ] NFR Design — EXECUTE (per unit)
-- [ ] Infrastructure Design — EXECUTE (per unit)
-- [ ] Code Generation — EXECUTE (per unit)
-- [ ] Build and Test — EXECUTE
+- [ ] Functional Design — SKIP (ユーザー判断)
+- [ ] NFR Requirements — SKIP (ユーザー判断)
+- [ ] NFR Design — SKIP (ユーザー判断)
+- [ ] Infrastructure Design — SKIP (ユーザー判断)
+- [ ] Code Generation — SKIP (ユーザー判断)
+- [ ] Build and Test — SKIP (ユーザー判断)
 
 ### 🟡 OPERATIONS PHASE
 - [ ] Operations — PLACEHOLDER
 
 ## Current Status
-- **Lifecycle Phase**: INCEPTION → CONSTRUCTION
+- **Lifecycle Phase**: INCEPTION COMPLETE
 - **Current Stage**: Units Generation Complete
-- **Next Stage**: Functional Design（Unit 2: Orchestrator から開始）
-- **Status**: Awaiting user approval
+- **Next Stage**: なし（INCEPTION のみ実施）
+- **Status**: COMPLETE

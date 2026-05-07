@@ -1,95 +1,62 @@
-# コンポーネント定義 — TRAINING LOCK
+# コンポーネント定義 — お相撲さんと一緒
 
 ## コンポーネント一覧
 
+| ID | コンポーネント | 技術 | 役割 |
+|----|--------------|------|------|
+| C-01 | Web UI | Next.js (React + SSR) | 場面選択・お相撲さん表示・依存度ダッシュボード |
+| C-02 | API Gateway REST | Amazon API Gateway | Web UI からの REST リクエスト受付 |
+| C-03 | API Gateway WebSocket | Amazon API Gateway | リアルタイム励ましメッセージ配信 |
+| C-04 | Lambda Orchestrator | Python 3.12 | 各 Lambda の制御・フロー管理 |
+| C-05 | Lambda Encouragement | Python 3.12 | Bedrock による励ましテキスト生成・Polly 音声生成 |
+| C-06 | Lambda Analysis | Python 3.12 | Transcribe 音声解析（緊張ワード検知・沈黙検知・発話速度解析） |
+| C-07 | Lambda Dependency Tracker | Python 3.12 | 依存度スコア計算・DynamoDB 更新 |
+| C-08 | Lambda WS Notifier | Python 3.12 | WebSocket 経由でリアルタイム通知をプッシュ |
+| C-09 | Amazon Bedrock | Claude 3 Sonnet/Haiku | 励ましテキスト生成（相撲用語・状況対応） |
+| C-10 | Amazon Transcribe | — | リアルタイム音声認識・緊張ワード検知・沈黙検知・発話速度解析 |
+| C-11 | Amazon Polly | — | お相撲さん音声合成（MP3 出力） |
+| C-12 | Amazon S3 | — | 生成した音声ファイルの一時保存 |
+| C-13 | Amazon DynamoDB | — | セッション状態・依存度スコア・利用履歴管理 |
+| C-14 | AWS CDK | TypeScript | インフラ全体の IaC 管理 |
+
+---
+
+## コンポーネント詳細
+
 ### C-01: Web UI（Next.js）
-| 項目 | 内容 |
-|------|------|
-| **技術** | Next.js（React + SSR） |
-| **責務** | トレーニング宣言 UI / 設定画面 / セッション状態表示 / アクション履歴表示 |
-| **インターフェース** | REST API（API Gateway）/ WebSocket（API Gateway WebSocket） |
-| **主要画面** | ダッシュボード / トレーニング宣言フォーム / 設定画面 / 履歴画面 |
+- **役割**: ユーザーインターフェース全体
+- **主要画面**:
+  - ホーム（場面選択）
+  - 同席モード（お相撲さん表示・励ましメッセージ）
+  - 依存度ダッシュボード
+  - 利用履歴
+- **通信**: REST（API Gateway）+ WebSocket（リアルタイム更新）
 
-### C-02: API Gateway（REST）
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon API Gateway（REST API） |
-| **責務** | Web UI からの HTTP リクエストを受け付け、Lambda へルーティング |
-| **エンドポイント** | POST /session/start, POST /session/end, GET /session/{id}, PUT /settings |
+### C-04: Lambda Orchestrator
+- **役割**: セッション管理・各 Lambda の呼び出し制御
+- **主要処理**:
+  - セッション開始/終了
+  - 分析結果の受信と励まし生成のトリガー
+  - 依存度スコアの更新指示
 
-### C-03: API Gateway（WebSocket）
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon API Gateway（WebSocket API） |
-| **責務** | セッション中のリアルタイム状態更新を Web UI へプッシュ |
-| **イベント** | $connect, $disconnect, sendUpdate |
+### C-05: Lambda Encouragement
+- **役割**: 励ましコンテンツの生成
+- **主要処理**:
+  - Bedrock に状況（場面・検知内容）を渡して励ましテキスト生成
+  - Polly で音声ファイル生成
+  - S3 に音声ファイル保存
+  - WS Notifier 経由でフロントエンドに配信
 
-### C-04: Lambda — Orchestrator
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS Lambda（Python 3.12） |
-| **責務** | セッション開始/終了の受付、DynamoDB への状態保存、各機能 Lambda の起動制御 |
-| **トリガー** | API Gateway REST |
+### C-06: Lambda Analysis
+- **役割**: ユーザーの緊張状態を検知
+- **主要処理**:
+  - Transcribe でリアルタイム音声認識・緊張ワード検知・沈黙検知
+  - 発話速度（単語/秒）を計算して早口・詰まりを検知
+  - 検知結果を Orchestrator に通知
 
-### C-05: Lambda — Social Shield（社会的シールド）
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS Lambda（Python 3.12） |
-| **責務** | Bedrock Agent を呼び出してメール返信文・家族連絡文を生成、SES（モック）で送信 |
-| **トリガー** | Orchestrator Lambda から直接呼び出し / EventBridge Scheduler |
-
-### C-06: Lambda — Motivation Rebuttal（モチベ反論）
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS Lambda（Python 3.12） |
-| **責務** | サボり検知、Bedrock Agent で反論テキスト生成、Polly で音声化、S3 保存、メール/LINE 送信 |
-| **トリガー** | EventBridge Scheduler（終了予定時刻 + X 分後） |
-
-### C-07: Lambda — Logistics（物流連携）
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS Lambda（Python 3.12） |
-| **責務** | Bedrock Agent の判断に基づき PA-API（モック）で商品検索・発注、発注通知送信 |
-| **トリガー** | Orchestrator Lambda から呼び出し |
-
-### C-08: Lambda — WebSocket Notifier
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS Lambda（Python 3.12） |
-| **責務** | 各機能 Lambda の実行結果を WebSocket 経由で Web UI へリアルタイム通知 |
-| **トリガー** | 各機能 Lambda から呼び出し |
-
-### C-09: Bedrock Agent
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon Bedrock Agents（Claude 3 Sonnet / Haiku） |
-| **責務** | 状況に応じたテキスト生成（返信文 / 家族連絡 / 反論 / 発注判断）、アクション自動判断 |
-| **Action Groups** | social-shield-actions, motivation-actions, logistics-actions |
-
-### C-10: Amazon Polly
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon Polly |
-| **責務** | 反論テキストを MP3 音声ファイルに変換 |
-| **出力** | MP3 ファイル → S3 へ保存 |
-
-### C-11: Amazon S3
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon S3 |
-| **責務** | Polly 生成音声ファイルの一時保存、署名付き URL の発行 |
-| **バケット** | training-lock-audio-{env} |
-
-### C-12: Amazon DynamoDB
-| 項目 | 内容 |
-|------|------|
-| **技術** | Amazon DynamoDB |
-| **責務** | トレーニングセッション状態・ユーザー設定・発注履歴・WebSocket 接続 ID の永続化 |
-| **テーブル** | Sessions, UserSettings, OrderHistory, WebSocketConnections |
-
-### C-13: AWS CDK（インフラ）
-| 項目 | 内容 |
-|------|------|
-| **技術** | AWS CDK（TypeScript） |
-| **責務** | 全 AWS リソースの定義・デプロイ管理 |
-| **スタック** | TrainingLockStack |
+### C-07: Lambda Dependency Tracker
+- **役割**: 依存度の計算と記録
+- **主要処理**:
+  - セッション終了時に依存度スコアを計算
+  - DynamoDB に利用履歴・スコアを保存
+  - 依存度ランク（序ノ口〜横綱）を更新

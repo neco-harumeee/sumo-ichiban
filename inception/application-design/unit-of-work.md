@@ -1,144 +1,106 @@
-# ユニット・オブ・ワーク定義 — TRAINING LOCK
-
-## 分解方針
-
-| 項目 | 決定内容 |
-|------|---------|
-| **分割粒度** | 機能別 Lambda ごとに 1 ユニット |
-| **リポジトリ構成** | モノレポ（frontend / backend / infra） |
-| **共通コード管理** | 各 Lambda にコピー（シンプル、依存なし） |
-| **CDK スタック** | 1 スタックにすべてのリソースをまとめる |
-
----
+# Unit of Work — お相撲さんと一緒
 
 ## ユニット一覧
 
-### Unit 1: Frontend（Web UI）
-| 項目 | 内容 |
-|------|------|
-| **名称** | frontend |
-| **技術** | Next.js（React + SSR） |
-| **責務** | トレーニング宣言 UI / 設定画面 / リアルタイム状態表示 / アクション履歴 |
-| **対応コンポーネント** | C-01 Web UI |
-| **対応サービス** | S-01（セッション開始/終了操作）/ S-05（WebSocket 受信） |
-| **ディレクトリ** | `frontend/` |
-
-### Unit 2: Lambda — Orchestrator
-| 項目 | 内容 |
-|------|------|
-| **名称** | backend/orchestrator |
-| **技術** | Python 3.12 / AWS Lambda |
-| **責務** | セッション管理・各機能 Lambda の起動制御・DynamoDB 状態管理 |
-| **対応コンポーネント** | C-04 Lambda Orchestrator |
-| **対応サービス** | S-01 TrainingSessionService |
-| **ディレクトリ** | `backend/orchestrator/` |
-
-### Unit 3: Lambda — Social Shield（社会的シールド）
-| 項目 | 内容 |
-|------|------|
-| **名称** | backend/social-shield |
-| **技術** | Python 3.12 / AWS Lambda |
-| **責務** | Bedrock Agent 呼び出し・メール返信文生成・家族連絡文生成・SES モック送信 |
-| **対応コンポーネント** | C-05 Lambda Social Shield |
-| **対応サービス** | S-02 SocialShieldService |
-| **ディレクトリ** | `backend/social-shield/` |
-
-### Unit 4: Lambda — Motivation Rebuttal（モチベ反論）
-| 項目 | 内容 |
-|------|------|
-| **名称** | backend/motivation-rebuttal |
-| **技術** | Python 3.12 / AWS Lambda / Amazon Polly / S3 |
-| **責務** | サボり検知・Bedrock Agent で反論生成・Polly 音声合成・S3 保存・メール/LINE 送信 |
-| **対応コンポーネント** | C-06 Lambda Motivation Rebuttal |
-| **対応サービス** | S-03 MotivationRebuttalService |
-| **ディレクトリ** | `backend/motivation-rebuttal/` |
-
-### Unit 5: Lambda — Logistics（物流連携）
-| 項目 | 内容 |
-|------|------|
-| **名称** | backend/logistics |
-| **技術** | Python 3.12 / AWS Lambda |
-| **責務** | Bedrock Agent による発注判断・PA-API モック呼び出し・発注通知送信 |
-| **対応コンポーネント** | C-07 Lambda Logistics |
-| **対応サービス** | S-04 LogisticsService |
-| **ディレクトリ** | `backend/logistics/` |
-
-### Unit 6: Lambda — WebSocket Notifier
-| 項目 | 内容 |
-|------|------|
-| **名称** | backend/ws-notifier |
-| **技術** | Python 3.12 / AWS Lambda |
-| **責務** | WebSocket 接続管理・リアルタイム通知プッシュ |
-| **対応コンポーネント** | C-08 Lambda WS Notifier |
-| **対応サービス** | S-05 RealtimeNotificationService |
-| **ディレクトリ** | `backend/ws-notifier/` |
-
-### Unit 7: Infrastructure（CDK）
-| 項目 | 内容 |
-|------|------|
-| **名称** | infra |
-| **技術** | AWS CDK（TypeScript） |
-| **責務** | 全 AWS リソース定義（API Gateway / Lambda / DynamoDB / S3 / Bedrock / Polly） |
-| **対応コンポーネント** | C-13 AWS CDK |
-| **スタック** | TrainingLockStack（1 スタック） |
-| **ディレクトリ** | `infra/` |
+| ID | ユニット名 | 技術 | 優先度 | 依存ユニット |
+|----|-----------|------|--------|------------|
+| U-01 | frontend | Next.js | 高 | U-02 |
+| U-02 | orchestrator | Python 3.12 / Lambda | 高 | U-03, U-04, U-05 |
+| U-03 | encouragement | Python 3.12 / Lambda | 高 | なし |
+| U-04 | analysis | Python 3.12 / Lambda | 高 | なし |
+| U-05 | dependency-tracker | Python 3.12 / Lambda | 中 | なし |
+| U-06 | infra | AWS CDK / TypeScript | 高 | 全ユニット |
 
 ---
 
-## モノレポ ディレクトリ構成
+## ユニット詳細
+
+### U-01: frontend
+- **説明**: Next.js による Web UI 全体
+- **主要コンポーネント**: C-01
+- **主要機能**:
+  - 場面選択画面
+  - お相撲さん同席モード（励ましメッセージ・音声再生）
+  - 依存度ダッシュボード
+  - 利用履歴画面
+- **ディレクトリ**: `frontend/`
+
+### U-02: orchestrator
+- **説明**: セッション管理・各 Lambda の制御
+- **主要コンポーネント**: C-04
+- **主要機能**:
+  - セッション開始/終了 API
+  - 分析結果受信・励まし生成トリガー
+  - WebSocket 接続管理
+- **ディレクトリ**: `backend/orchestrator/`
+
+### U-03: encouragement
+- **説明**: 励ましコンテンツ生成（Bedrock + Polly）
+- **主要コンポーネント**: C-05, C-09, C-12, C-13
+- **主要機能**:
+  - Bedrock による励ましテキスト生成
+  - Polly による音声ファイル生成
+  - S3 への音声ファイル保存
+- **ディレクトリ**: `backend/encouragement/`
+
+### U-04: analysis
+- **説明**: ユーザーの緊張状態検知（Transcribe）
+- **主要コンポーネント**: C-06, C-10
+- **主要機能**:
+  - Transcribe によるリアルタイム音声認識・緊張ワード検知・沈黙検知
+  - 発話速度（単語/秒）の計算による早口・詰まり検知
+- **ディレクトリ**: `backend/analysis/`
+
+### U-05: dependency-tracker
+- **説明**: 依存度スコア計算・記録
+- **主要コンポーネント**: C-07, C-14
+- **主要機能**:
+  - セッション終了時の依存度スコア計算
+  - DynamoDB への利用履歴・スコア保存
+  - 依存度ランク更新
+- **ディレクトリ**: `backend/dependency-tracker/`
+
+### U-06: infra
+- **説明**: AWS CDK によるインフラ全体の IaC
+- **主要コンポーネント**: C-15
+- **主要リソース**:
+  - Lambda 関数（全 5 つ）
+  - API Gateway（REST + WebSocket）
+  - DynamoDB テーブル（3 つ）
+  - S3 バケット
+  - IAM ロール・ポリシー
+- **ディレクトリ**: `infra/`
+
+---
+
+## モノレポ構成
 
 ```
-training-lock/                    # リポジトリルート
-├── frontend/                     # Unit 1: Next.js Web UI
+sumo-with-me/
+├── frontend/              # U-01: Next.js Web UI
 │   ├── src/
-│   │   ├── app/                  # Next.js App Router
-│   │   │   ├── page.tsx          # ダッシュボード
-│   │   │   ├── settings/
-│   │   │   └── history/
-│   │   ├── components/           # React コンポーネント
-│   │   └── lib/                  # API クライアント / WebSocket
-│   ├── public/
-│   ├── package.json
-│   └── next.config.js
-│
-├── backend/                      # バックエンド Lambda 群
-│   ├── orchestrator/             # Unit 2
-│   │   ├── handler.py
-│   │   ├── dynamodb_client.py    # 共通コードコピー
-│   │   ├── bedrock_client.py     # 共通コードコピー
-│   │   └── requirements.txt
-│   ├── social-shield/            # Unit 3
-│   │   ├── handler.py
-│   │   ├── dynamodb_client.py    # 共通コードコピー
-│   │   ├── bedrock_client.py     # 共通コードコピー
-│   │   ├── ses_mock.py           # SES モック
-│   │   └── requirements.txt
-│   ├── motivation-rebuttal/      # Unit 4
-│   │   ├── handler.py
-│   │   ├── dynamodb_client.py    # 共通コードコピー
-│   │   ├── bedrock_client.py     # 共通コードコピー
-│   │   ├── polly_client.py
-│   │   ├── s3_client.py
-│   │   └── requirements.txt
-│   ├── logistics/                # Unit 5
-│   │   ├── handler.py
-│   │   ├── dynamodb_client.py    # 共通コードコピー
-│   │   ├── bedrock_client.py     # 共通コードコピー
-│   │   ├── pa_api_mock.py        # PA-API モック
-│   │   └── requirements.txt
-│   └── ws-notifier/              # Unit 6
-│       ├── handler.py
-│       ├── dynamodb_client.py    # 共通コードコピー
-│       └── requirements.txt
-│
-├── infra/                        # Unit 7: AWS CDK
-│   ├── bin/
-│   │   └── training-lock.ts
+│   │   ├── app/
+│   │   ├── components/
+│   │   └── lib/
+│   └── package.json
+├── backend/
+│   ├── orchestrator/      # U-02: Orchestrator Lambda
+│   ├── encouragement/     # U-03: Encouragement Lambda
+│   ├── analysis/          # U-04: Analysis Lambda
+│   └── dependency-tracker/ # U-05: Dependency Tracker Lambda
+├── infra/                 # U-06: AWS CDK
 │   ├── lib/
-│   │   └── training-lock-stack.ts
-│   ├── package.json
-│   └── cdk.json
-│
-├── docs/                         # ドキュメント（aidlc-docs 以外）
-└── README.md
+│   └── bin/
+└── aidlc-docs/            # AI-DLC ドキュメント
 ```
+
+---
+
+## 実装優先順位
+
+1. **U-06 infra** — CDK スタック骨格（Lambda + API Gateway + DynamoDB + S3）
+2. **U-03 encouragement** — Bedrock + Polly の励まし生成（コアバリュー）
+3. **U-02 orchestrator** — セッション管理・フロー制御
+4. **U-04 analysis** — Transcribe 音声解析（緊張ワード・沈黙・発話速度）
+5. **U-01 frontend** — Web UI（場面選択 + 同席モード）
+6. **U-05 dependency-tracker** — 依存度スコア（デモ映え向上）
