@@ -1,4 +1,4 @@
-# Unit of Work — 相撲一番（SUMO ICHIBAN）
+# Unit of Work — お相撲さんと一緒
 
 ## ユニット一覧
 
