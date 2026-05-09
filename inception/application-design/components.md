@@ -1,23 +1,23 @@
-# コンポーネント定義 — お相撲さんと一緒
+# コンポーネント定義 — 相撲一番（SUMO ICHIBAN）
 
 ## コンポーネント一覧
 
-| ID | コンポーネント | 技術 | 役割 |
-|----|--------------|------|------|
-| C-01 | Web UI | Next.js (React + SSR) | 場面選択・お相撲さん表示・依存度ダッシュボード |
-| C-02 | API Gateway REST | Amazon API Gateway | Web UI からの REST リクエスト受付 |
-| C-03 | API Gateway WebSocket | Amazon API Gateway | リアルタイム励ましメッセージ配信 |
-| C-04 | Lambda Orchestrator | Python 3.12 | 各 Lambda の制御・フロー管理 |
-| C-05 | Lambda Encouragement | Python 3.12 | Bedrock による励ましテキスト生成・Polly 音声生成 |
-| C-06 | Lambda Analysis | Python 3.12 | Transcribe 音声解析（緊張ワード検知・沈黙検知・発話速度解析） |
-| C-07 | Lambda Dependency Tracker | Python 3.12 | 依存度スコア計算・DynamoDB 更新 |
-| C-08 | Lambda WS Notifier | Python 3.12 | WebSocket 経由でリアルタイム通知をプッシュ |
-| C-09 | Amazon Bedrock | Claude 3 Sonnet/Haiku | 励ましテキスト生成（相撲用語・状況対応） |
-| C-10 | Amazon Transcribe | — | リアルタイム音声認識・緊張ワード検知・沈黙検知・発話速度解析 |
-| C-11 | Amazon Polly | — | お相撲さん音声合成（MP3 出力） |
-| C-12 | Amazon S3 | — | 生成した音声ファイルの一時保存 |
-| C-13 | Amazon DynamoDB | — | セッション状態・依存度スコア・利用履歴管理 |
-| C-14 | AWS CDK | TypeScript | インフラ全体の IaC 管理 |
+| ID | コンポーネント | 技術 | 役割 | 相撲技 |
+|----|--------------|------|------|--------|
+| C-01 | Web UI | Next.js (React + SSR) | 場面選択・お相撲さん表示・依存度ダッシュボード | 仕切り |
+| C-02 | API Gateway REST | Amazon API Gateway | Web UI からの REST リクエスト受付 | 行司 |
+| C-03 | API Gateway WebSocket | Amazon API Gateway | リアルタイム助言メッセージ配信 | 呼び出し |
+| C-04 | Lambda Orchestrator | Python 3.12 | 各 Lambda の制御・フロー管理 | 親方 |
+| C-05 | Lambda Encouragement | Python 3.12 | Bedrock による助言テキスト生成・Polly 音声生成 | 決まり手 |
+| C-06 | Lambda Analysis | Python 3.12 | Transcribe 音声解析（緊張/迷い/疲労ワード検知・沈黙検知・発話速度解析） | 見合い |
+| C-07 | Lambda Dependency Tracker | Python 3.12 | 依存度スコア計算・番付更新・DynamoDB 更新 | 番付昇進 |
+| C-08 | Lambda WS Notifier | Python 3.12 | WebSocket 経由でリアルタイム通知をプッシュ | 呼び出し |
+| C-09 | Amazon Bedrock | Claude 3 Sonnet/Haiku | 助言テキスト生成（相撲技・状況対応・実用的アドバイス） | 知恵袋 |
+| C-10 | Amazon Transcribe | — | リアルタイム音声認識・緊張/迷い/疲労ワード検知・沈黙検知・発話速度解析 | 見合い |
+| C-11 | Amazon Polly | — | お相撲さん音声合成（MP3 出力） | 呼び出し太鼓 |
+| C-12 | Amazon S3 | — | 生成した音声ファイルの一時保存 | 土俵 |
+| C-13 | Amazon DynamoDB | — | セッション状態・番付スコア・利用履歴管理 | 番付表 |
+| C-14 | AWS CDK | TypeScript | インフラ全体の IaC 管理 | 土俵築き |
 
 ---
 
@@ -26,37 +26,50 @@
 ### C-01: Web UI（Next.js）
 - **役割**: ユーザーインターフェース全体
 - **主要画面**:
-  - ホーム（場面選択）
-  - 同席モード（お相撲さん表示・励ましメッセージ）
-  - 依存度ダッシュボード
-  - 利用履歴
+  - ホーム（場面選択 — 仕事シーン / 日常生活シーン）
+  - 同席モード（お相撲さん表示・助言メッセージ・相撲技名表示）
+  - 依存度ダッシュボード（番付表示・仕事/日常シーン別利用比率）
+  - 利用履歴（シーン別・日付別）
 - **通信**: REST（API Gateway）+ WebSocket（リアルタイム更新）
+- **相撲技**: 仕切り（ユーザーが場面を選び、試合を始める）
 
-### C-04: Lambda Orchestrator
+### C-04: Lambda Orchestrator（親方）
 - **役割**: セッション管理・各 Lambda の呼び出し制御
 - **主要処理**:
   - セッション開始/終了
-  - 分析結果の受信と励まし生成のトリガー
+  - シーンカテゴリ（仕事/日常）の判別と相撲技の選択
+  - 分析結果の受信と助言生成のトリガー
   - 依存度スコアの更新指示
+- **相撲技**: 親方（全体を見渡し、最適な技を指示する）
 
-### C-05: Lambda Encouragement
-- **役割**: 励ましコンテンツの生成
+### C-05: Lambda Encouragement（決まり手）
+- **役割**: 助言コンテンツの生成
 - **主要処理**:
-  - Bedrock に状況（場面・検知内容）を渡して励ましテキスト生成
+  - Bedrock に状況（シーン・検知内容・相撲技）を渡して助言テキスト生成
+  - 仕事シーン: 具体的な対処フレーズ・交渉術を含む助言
+  - 日常シーン: 実用的な提案・選択肢・手順を含む助言
   - Polly で音声ファイル生成
   - S3 に音声ファイル保存
   - WS Notifier 経由でフロントエンドに配信
+- **相撲技**: 決まり手（勝負を決める実用的な一手）
 
-### C-06: Lambda Analysis
-- **役割**: ユーザーの緊張状態を検知
+### C-06: Lambda Analysis（見合い）
+- **役割**: ユーザーの状況を検知
 - **主要処理**:
-  - Transcribe でリアルタイム音声認識・緊張ワード検知・沈黙検知
-  - 発話速度（単語/秒）を計算して早口・詰まりを検知
+  - Transcribe でリアルタイム音声認識
+  - 緊張ワード検知（仕事シーン）→ 押し出し・寄り切り技発動
+  - 迷いワード検知（日常シーン）→ 引き落とし・割り出し技発動
+  - 疲労ワード検知（健康シーン）→ 土俵際の踏ん張り技発動
+  - 沈黙検知・発話速度解析
   - 検知結果を Orchestrator に通知
+- **相撲技**: 見合い（相手（状況）をじっくり読む）
 
-### C-07: Lambda Dependency Tracker
-- **役割**: 依存度の計算と記録
+### C-07: Lambda Dependency Tracker（番付昇進）
+- **役割**: 依存度の計算と番付管理
 - **主要処理**:
   - セッション終了時に依存度スコアを計算
+  - 仕事/日常シーン別の重み付けスコア計算
   - DynamoDB に利用履歴・スコアを保存
-  - 依存度ランク（序ノ口〜横綱）を更新
+  - 番付（序ノ口〜横綱）を更新
+  - 番付昇進時の特別メッセージを生成
+- **相撲技**: 番付昇進（実力（依存度）に応じた地位の上昇）
